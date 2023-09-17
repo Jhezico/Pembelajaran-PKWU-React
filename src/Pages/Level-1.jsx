@@ -31,37 +31,29 @@ const initialGambarColumnId = Object.keys(columnsFromBackend).find(
   (columnId) => columnsFromBackend[columnId].name === "Gambar"
 );
 
-const onDragEnd = (result, columns, setColumns) => {
-  const { source, destination } = result;
+const onDragEnd = (result) => {
+  const { destination } = result;
   if (destination?.droppableId === initialGambarColumnId) {
-    // Dapatkan konten dari item yang di-drop
-    const droppedItemId = result.draggableId;
-    if (columns.Gambar) {
-      const droppedItem = columns.Gambar.items.find(
+    const dataPilihanGanda = Object.values(columnsFromBackend).find(
+      (column) => column.name === "Pilihan Ganda"
+    );
+    if (dataPilihanGanda) {
+      const itemsPilihanGanda = dataPilihanGanda.items;
+      const droppedItemId = result.draggableId;
+      const droppedItem = itemsPilihanGanda.find(
         (item) => item.id === droppedItemId
       );
+
       if (droppedItem) {
-        if (droppedItem.content === correctAnswer) {
-          console.log("Jawaban Benar!");
+        const content = droppedItem.content;
+        console.log(`Makanan yang di-drop: ${content}`);
+        if (content === "Di Bakar") {
+          console.log("Jawaban Benar! Makanan ini di bakar.");
         } else {
-          console.log("Jawaban Salah!");
+          console.log("Jawaban Salah! Makanan ini tidak di bakar.");
         }
-
-        const newItems = [...columns.Gambar.items];
-        const itemIndex = newItems.findIndex(
-          (item) => item.id === droppedItemId
-        );
-        if (itemIndex !== -1) {
-          newItems.splice(itemIndex, 1);
-        }
-
-        setColumns({
-          ...columns,
-          Gambar: {
-            ...columns.Gambar,
-            items: newItems,
-          },
-        });
+      } else {
+        console.log("Item tidak ditemukan.");
       }
     }
   } else {
