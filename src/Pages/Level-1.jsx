@@ -33,18 +33,13 @@ const initialGambarColumnId = Object.keys(columnsFromBackend).find(
 
 const onDragEnd = (result, columns, setColumns) => {
   const { source, destination } = result;
-
-  // Pastikan item di-drop ke dalam kolom "Gambar"
   if (destination?.droppableId === initialGambarColumnId) {
     // Dapatkan konten dari item yang di-drop
     const droppedItemId = result.draggableId;
-
-    // Periksa apakah kolom "Gambar" ada di dalam columns
     if (columns.Gambar) {
       const droppedItem = columns.Gambar.items.find(
         (item) => item.id === droppedItemId
       );
-
       if (droppedItem) {
         if (droppedItem.content === correctAnswer) {
           console.log("Jawaban Benar!");
@@ -52,7 +47,6 @@ const onDragEnd = (result, columns, setColumns) => {
           console.log("Jawaban Salah!");
         }
 
-        // Perbarui state dengan item yang di-drop
         const newItems = [...columns.Gambar.items];
         const itemIndex = newItems.findIndex(
           (item) => item.id === droppedItemId
