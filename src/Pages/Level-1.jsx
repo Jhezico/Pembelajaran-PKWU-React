@@ -2,16 +2,17 @@ import React, { useState, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 import Sate from "../Assets/Sate.png"; // Import gambar Sate
+import soal from "../Components/Level 1/Nomer-1";
 
-const itemsFromBackend = [
-  { id: uuidv4(), content: "Di Bakar" },
-  { id: uuidv4(), content: "Di Kukus" },
-  { id: uuidv4(), content: "Di Goreng" },
-  { id: uuidv4(), content: "Di Rebus" },
-  { id: uuidv4(), content: "Di Tumis" },
-];
+const itemsFromBackend = soal
+  .map((item) => item.pilihanGanda)
+  .reduce((acc, val) => acc.concat(val), []);
 
-const image = { id: uuidv4(), content: Sate };
+const images = { id: uuidv4(), content: Sate };
+const image = soal.map((item) => item.image);
+
+console.log(image);
+console.log(images);
 
 const columnsFromBackend = {
   [uuidv4()]: {
