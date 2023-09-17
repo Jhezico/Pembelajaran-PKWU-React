@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 import Sate from "../Assets/Sate.png"; // Import gambar Sate
@@ -12,9 +12,6 @@ const itemsFromBackend = [
 ];
 
 const image = { id: uuidv4(), content: Sate };
-
-// Jawaban yang benar
-const correctAnswer = "Di Bakar";
 
 const columnsFromBackend = {
   [uuidv4()]: {
@@ -31,8 +28,9 @@ const initialGambarColumnId = Object.keys(columnsFromBackend).find(
   (columnId) => columnsFromBackend[columnId].name === "Gambar"
 );
 
-const onDragEnd = (result) => {
-  const { destination } = result;
+const onDragEnd = (result, columns, setColumns) => {
+  if (!result.destination) return;
+  const { source, destination } = result;
   if (destination?.droppableId === initialGambarColumnId) {
     const dataPilihanGanda = Object.values(columnsFromBackend).find(
       (column) => column.name === "Pilihan Ganda"
@@ -49,8 +47,43 @@ const onDragEnd = (result) => {
         console.log(`Makanan yang di-drop: ${content}`);
         if (content === "Di Bakar") {
           console.log("Jawaban Benar! Makanan ini di bakar.");
+
+          // Salin kolom sumber dan kolom tujuan
+          const sourceColumn = { ...columns[source.droppableId] };
+          const destColumn = { ...columns[destination.droppableId] };
+
+          // Salin item-item dari kolom sumber dan kolom tujuan
+          const sourceItems = [...sourceColumn.items];
+          const destItems = [...destColumn.items];
+
+          // Hapus item yang di-drag dari kolom sumber
+          sourceItems.splice(source.index, 1);
+
+          // Update kolom-kolom dengan item yang sudah dihapus
+          setColumns({
+            ...columns,
+            [source.droppableId]: {
+              ...sourceColumn,
+              items: sourceItems,
+            },
+            [destination.droppableId]: {
+              ...destColumn,
+              items: destItems,
+            },
+          });
         } else {
           console.log("Jawaban Salah! Makanan ini tidak di bakar.");
+          const column = columns[source.droppableId];
+          const copiedItems = [...column.items];
+          const [removed] = copiedItems.splice(source.index, 1);
+          copiedItems.splice(destination.index, 0, removed);
+          setColumns({
+            ...columns,
+            [source.droppableId]: {
+              ...column,
+              items: copiedItems,
+            },
+          });
         }
       } else {
         console.log("Item tidak ditemukan.");
@@ -61,8 +94,37 @@ const onDragEnd = (result) => {
   }
 };
 
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
 function LevelSatu() {
   const [columns, setColumns] = useState(columnsFromBackend);
+
+  // Menyimpan pilihan ganda awal dalam state
+  const [initialItems, setInitialItems] = useState(itemsFromBackend);
+
+  // Shuffle pilihan ganda saat komponen pertama kali dimuat
+  useEffect(() => {
+    const shuffledItems = shuffleArray(initialItems);
+    const newColumns = {
+      ...columns,
+      [initialGambarColumnId]: {
+        ...columns[initialGambarColumnId],
+        items: [{ id: uuidv4(), content: Sate }],
+      },
+      [Object.keys(columnsFromBackend)[1]]: {
+        ...columnsFromBackend[Object.keys(columnsFromBackend)[1]],
+        items: shuffledItems,
+      },
+    };
+    setColumns(newColumns);
+  }, []);
   return (
     <div style={{ display: "block", justifyContent: "center", height: "100%" }}>
       <DragDropContext
