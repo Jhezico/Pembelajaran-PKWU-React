@@ -22,7 +22,7 @@ const Home = () => {
           <p className="text-white mb-3 px-5">
             Pembelajaran interaktif PKWU (Prakarya dan Kewirausahaan)
           </p>
-          <ButtonLevel Text="Level 1" Link={"/level-1"} />
+          <ButtonLevel Text="Level 1" Link={"/level-1/nomer-1"} />
           <ButtonLevel Text="Level 2" Link={"/level-2"} />
           <ButtonLevel Text="Level 3" Link={"/level-3"} />
         </div>
