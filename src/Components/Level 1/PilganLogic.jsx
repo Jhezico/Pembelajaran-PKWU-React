@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Soal from "./Level 1/Soal";
+import Soal from "./Soal";
 
 export const pilganLogic = () => {
   const [idSoal, setIdSoal] = useState(1);

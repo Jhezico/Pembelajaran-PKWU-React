@@ -5,13 +5,10 @@ import Swal from "sweetalert2";
 import { Howl, Howler } from "howler";
 import { Link, useNavigate } from "react-router-dom";
 import { MusicContext } from "../Components/MusicContext";
-import Soal from "../Components/Level 1/Soal";
-import { pilganLogic } from "../Components/PilganLogic";
-import Sate from "../Assets/Sate.png"; // Import gambar Sate
-import NasiGoreng from "../Assets/Nasi-Goreng.png"; // Import gambar Sate
+import { pilganLogic } from "../Components/Level 3/PilganLogic";
 import HomeButton from "../Assets/Button-Home.png";
-import ButtonOnMusic from "../Assets/Button-On-Music.png";
-import ButtonOffMusic from "../Assets/Button-Off-Music.png";
+import ButtonOnMusic from "../Assets/Button-Off-Music.png";
+import ButtonOffMusic from "../Assets/Button-On-Music.png";
 import SoundBenar from "../Assets/Sound-Benar.mp3";
 import SoundSalah from "../Assets/Sound-Salah.mp3";
 import SoundButtonClick from "../Assets/Sound-Button-Click.mp3";
@@ -41,20 +38,14 @@ const shuffleArray = (array) => {
 
 function NomerSatu() {
   const { idSoal, handleCorrectAnswer, matchingSoalItem } = pilganLogic();
-  let columnsFromBackend = {
-    [uuidv4()]: {
-      name: "Gambar",
-      items: [matchingSoalItem.image],
-    },
-    [uuidv4()]: {
-      name: "Pilihan Ganda",
-      items: matchingSoalItem.pilihanGanda,
-    },
+  const shufflePilihanGanda = (pilihanGanda) => {
+    return shuffleArray([...pilihanGanda]);
   };
+  let columnsFromBackend = {};
 
   if (matchingSoalItem) {
     columnsFromBackend = {
-      [uuidv4()]: {
+      Gambar: {
         name: "Gambar",
         items: [matchingSoalItem.image],
       },
@@ -67,6 +58,12 @@ function NomerSatu() {
     columnsFromBackend = {};
   }
 
+  const initialGambarColumnId = Object.keys(columnsFromBackend).find(
+    (columnId) => columnsFromBackend[columnId].name === "Gambar"
+  );
+
+  console.log(columnsFromBackend);
+
   const [columns, setColumns] = useState(columnsFromBackend);
   const { isMusicPlaying, toggleMusic } = useContext(MusicContext);
 
@@ -76,14 +73,10 @@ function NomerSatu() {
     matchingSoalItem ? matchingSoalItem.pilihanGanda : []
   );
 
-  const initialGambarColumnId = Object.keys(columnsFromBackend).find(
-    (columnId) => columnsFromBackend[columnId].name === "Gambar"
-  );
-
   const onDragEnd = (result, columns, setColumns) => {
     if (!result.destination) return;
     const { source, destination } = result;
-    console.log(destination?.droppableId);
+    console.log(destination);
     console.log(initialGambarColumnId);
     if (destination?.droppableId === initialGambarColumnId) {
       const dataPilihanGanda = Object.values(columnsFromBackend).find(
@@ -102,18 +95,14 @@ function NomerSatu() {
           if (content === matchingSoalItem.jawabanBenar) {
             console.log(`Jawaban Benar! Makanan ini ${content}`);
 
-            // Salin kolom sumber dan kolom tujuan
             const sourceColumn = { ...columns[source.droppableId] };
             const destColumn = { ...columns[destination.droppableId] };
 
-            // Salin item-item dari kolom sumber dan kolom tujuan
             const sourceItems = [...sourceColumn.items];
             const destItems = [...destColumn.items];
 
-            // Hapus item yang di-drag dari kolom sumber
             sourceItems.splice(source.index, 1);
 
-            // Update kolom-kolom dengan item yang sudah dihapus
             setColumns({
               ...columns,
               [source.droppableId]: {
@@ -130,7 +119,7 @@ function NomerSatu() {
               toast: true,
               position: "top-end",
               showConfirmButton: false,
-              timer: 3000,
+              timer: 1500,
               timerProgressBar: true,
               didOpen: (toast) => {
                 toast.addEventListener("mouseenter", Swal.stopTimer);
@@ -145,7 +134,7 @@ function NomerSatu() {
             soundBenar.play();
             setTimeout(() => {
               handleCorrectAnswer();
-            }, 3000);
+            }, 1500);
           } else {
             console.log(`Jawaban Salah! Makanan ini tidak ${content}.`);
             const column = columns[source.droppableId];
@@ -163,7 +152,7 @@ function NomerSatu() {
               toast: true,
               position: "top-end",
               showConfirmButton: false,
-              timer: 3000,
+              timer: 1500,
               timerProgressBar: true,
               didOpen: (toast) => {
                 toast.addEventListener("mouseenter", Swal.stopTimer);
@@ -184,49 +173,26 @@ function NomerSatu() {
       }
     } else {
       console.log("salah");
+      return;
     }
   };
 
-  // Shuffle pilihan ganda saat komponen pertama kali dimuat
   useEffect(() => {
-    const shuffledItems = shuffleArray(initialItems);
-    const newColumns = {
-      ...columns,
-      [initialGambarColumnId]: {
-        ...columns[initialGambarColumnId],
-        items: [
-          {
-            id: matchingSoalItem.image.id,
-            content: matchingSoalItem.image.content,
-            soal: matchingSoalItem.image.soal,
-          },
-        ],
-      },
-      [Object.keys(columnsFromBackend)[1]]: {
-        ...columnsFromBackend[Object.keys(columnsFromBackend)[1]],
-        items: shuffledItems,
-      },
-    };
-    setColumns(newColumns);
-  }, []);
-  useEffect(() => {
-    // Fungsi ini akan dijalankan setiap kali `idSoal` berubah
-    const nextSoalId = idSoal;
-    const nextSoal = Soal.find((item) => item.id === nextSoalId);
-
-    if (nextSoal) {
-      // Jika ada soal berikutnya, kita akan mengubah `matchingSoalItem` dan `initialItems` dengan soal berikutnya
+    if (matchingSoalItem) {
+      const shuffledPilihanGanda = shufflePilihanGanda(
+        matchingSoalItem.pilihanGanda
+      );
       setColumns({
-        [uuidv4()]: {
+        Gambar: {
           name: "Gambar",
-          items: [nextSoal.image],
+          items: [matchingSoalItem.image],
         },
         [uuidv4()]: {
           name: "Pilihan Ganda",
-          items: nextSoal.pilihanGanda,
+          items: shuffledPilihanGanda,
         },
       });
-      setInitialItems(nextSoal.pilihanGanda);
+      setInitialItems(shuffledPilihanGanda);
     } else {
       setColumns({
         [uuidv4()]: {
@@ -238,14 +204,13 @@ function NomerSatu() {
           items: [],
         },
       });
-      // Jika tidak ada soal berikutnya, Anda dapat melakukan sesuatu di sini, seperti menavigasi ke halaman lain
-      navigate("/");
+      navigate("/end-game");
     }
   }, [idSoal, navigate]);
   return (
     <div
-      style={{ display: "block", justifyContent: "center" }}
-      className="bg-red-600 h-[100vh] overflow-y-hidden"
+      style={{ justifyContent: "center" }}
+      className="bg-red-600 h-[100vh] overflow-y-hidden block lg:flex"
     >
       <div className="absolute top-5 left-5 flex z-10">
         <Link to="/">
@@ -275,7 +240,7 @@ function NomerSatu() {
       >
         {Object.entries(columns).map(([columnId, column], index) => {
           return (
-            <div className="bg-red-600" key={columnId}>
+            <div className="bg-red-600 w-full my-auto" key={columnId}>
               <div style={{ margin: 8 }} className="">
                 <Droppable droppableId={columnId} key={columnId}>
                   {(provided, snapshot) => {
@@ -305,7 +270,7 @@ function NomerSatu() {
                                 <img
                                   src={item.content}
                                   alt="Sate"
-                                  className="w-full"
+                                  className="w-[90%] mx-auto sm:w-[70%] md:w-[50%]"
                                 />
                                 <p className="text-xl text-white text-center">
                                   {item.soal}
@@ -328,7 +293,7 @@ function NomerSatu() {
                                       style={{
                                         ...provided.draggableProps.style,
                                       }}
-                                      className={`select-none p-3 mb-4 min-h-[50px] text-center font-semibold rounded-[15px]  ${
+                                      className={`select-none p-3 mb-4 min-h-[50px] text-center font-semibold rounded-[15px] w-[%] ${
                                         snapshot.isDragging
                                           ? "bg-orange-600 text-white"
                                           : "bg-white"
